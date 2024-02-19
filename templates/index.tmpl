@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Yoda Podcast Player</title>
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <style>
+        /* Custom dark theme */
+        body {
+            background-color: #343a40;
+            color: #fff;
+        }
+
+        .navbar {
+            background-color: #212529 !important;
+        }
+
+        .navbar-nav .nav-link {
+            color: #fff !important;
+        }
+
+        .container {
+            background-color: #454d55;
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+
+        .btn-primary {
+            background-color: #007bff;
+            border-color: #007bff;
+        }
+
+        .btn-primary:hover {
+            background-color: #0056b3;
+            border-color: #0056b3;
+        }
+
+        .btn-danger {
+            background-color: #dc3545;
+            border-color: #dc3545;
+        }
+
+        .btn-danger:hover {
+            background-color: #bd2130;
+            border-color: #bd2130;
+        }
+
+        h4 {
+            color: #fff;
+            margin-bottom: 10px;
+            /* Add margin between track titles */
+        }
+
+        .row {
+            align-items: center;
+            /* Align items vertically */
+            margin-bottom: 10px;
+            /* Add margin between rows */
+        }
+
+        .row-bottom-border {
+            border-bottom: 1px solid #fff;
+            /* White bottom border */
+            padding-bottom: 10px;
+            /* Add padding to space out the border */
+        }
+
+        .small-text {
+            font-size: 0.8em;
+            /* Adjust the font size as needed */
+        }
+        
+        .location-text {
+            display: inline-block;
+            max-width: 500px; /* Maximum width of the location text */
+            overflow: hidden;
+            text-overflow: ellipsis; /* Truncate text with ellipsis */
+            white-space: nowrap; /* Prevent wrapping */
+        }
+
+        .thick-white-line {
+            border-bottom: 5px solid #fff; /* Thick white line */
+            margin-top: 20px; /* Adjust margin as needed */
+            margin-bottom: 20px; /* Adjust margin as needed */
+        }
+
+        /* Media queries for different screen sizes */
+        @media (max-width: 576px) {
+            .location-text {
+                max-width: 100px; /* Adjust for small screens */
+            }
+        }
+
+        @media (min-width: 577px) and (max-width: 768px) {
+            .location-text {
+                max-width: 150px; /* Adjust for medium screens */
+            }
+        }
+
+        @media (min-width: 769px) {
+            .location-text {
+                max-width: 500px; /* Adjust for large screens */
+            }
+        }
+        
+        /* Additional styles for the track and volume display */
+        .track-volume-display {
+            color: #fff;
+            font-size: 0.9em;
+            margin-left: 20px; /* Adjust spacing from the left side */
+            white-space: nowrap; /* Prevent wrapping */
+        }
+
+        .volume {
+            display: block;
+        }
+    </style>
+</head>
+
+<body>
+
+    {{template "navigation"}}
+
+
+    <div class="container mt-5">
+        <h2>Track List</h2>
+        <div class="thick-white-line"></div>
+        {{ range . }}
+        {{ block "track-list-element" .}}
+        <div class="row row-bottom-border">
+            <div class="col-8">
+                <h4>{{ .RFID }} - <span class="location-text small-text">{{ .Location }}</span></h4>
+            </div>
+            <div class="col-4 text-right">
+                <button class="btn btn-primary">Edit</button>
+                <button class="btn btn-danger ml-2">Delete</button>
+            </div>
+        </div>
+        {{ end }}
+        {{ end }}
+
+        <!-- Add more rows as needed -->
+    {{template "footer"}}
+    </div>
+
+    <!-- Bootstrap JS and dependencies (Popper.js) -->
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.3/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script src="https://unpkg.com/htmx.org@1.9.10"
+        integrity="sha384-D1Kt99CQMDuVetoL1lrYwg5t+9QdHe7NLX/SoJYkXDFfX37iInKRy5xLSi8nO7UC"
+        crossorigin="anonymous"></script>
+
+    
+</body>
+
+</html>

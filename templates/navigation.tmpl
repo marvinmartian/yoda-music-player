@@ -1,0 +1,30 @@
+{{define "navigation"}}
+<nav class="navbar navbar-expand-lg navbar-dark">
+    <a class="navbar-brand" href="#">My Website</a>
+    <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav mr-auto"> <!-- Align rest of the navbar items to the left -->
+            <li class="nav-item">
+                <a class="nav-link" href="#">Home</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="#">Add Track</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="#">View Stats</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="#">Settings</a>
+            </li>
+        </ul>
+        <!-- Add track and volume display here -->
+        {{ block "track-status" .}}
+        <div class="track-volume-display"  hx-get="/v1/status"
+    hx-trigger="load delay:1s"
+    hx-swap="outerHTML">
+            <span>Current Track: Track Name</span>
+            <span class="volume">Volume: 80%</span>
+        </div>
+        {{end}}
+    </div>
+</nav>
+{{end}}
