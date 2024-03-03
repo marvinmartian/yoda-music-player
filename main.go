@@ -1,6 +1,7 @@
 package main
 
 import (
+	"embed"
 	"encoding/json"
 	"flag"
 	"fmt"
@@ -18,6 +19,9 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
+
+//go:embed templates/*.tmpl
+var content embed.FS
 
 var (
 	mu             sync.Mutex
@@ -102,7 +106,13 @@ func init() {
 	flag.StringVar(&mp3JsonPath, "mp3File", "../mp3.json", "Path to the MP3 JSON file")
 	flag.Parse()
 
-	tmpl = template.Must(template.ParseGlob("templates/*.tmpl"))
+	// tmpl = template.Must(template.ParseGlob("templates/*.tmpl"))
+	// Load templates from embedded filesystem
+	tmpl, _ = template.ParseFS(content, "templates/*.tmpl")
+	// if err != nil {
+	// 	fmt.Println("Error loading templates:", err)
+	// 	return
+	// }
 	// tmpl = template.Must(template.ParseFiles("templates/index.html", "templates/navigation.html", "templates/footer.html"))
 }
 
