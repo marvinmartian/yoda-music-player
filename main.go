@@ -136,7 +136,7 @@ func durationSinceStart(startTime time.Time) time.Duration {
 	return time.Since(startTime)
 }
 
-func playMP3(player *player.Player, filePath string, offset int, currentID string) {
+func playMP3(player *player.Player, filePath string, offset int, currentID string, attempt int) {
 	stopMP3(player)
 	if isPlaying && currentID == lastPlayedID {
 		fmt.Println("This track is already playing.")
@@ -155,6 +155,10 @@ func playMP3(player *player.Player, filePath string, offset int, currentID strin
 	if playErr != nil {
 		fmt.Println("mpd Play Error")
 		fmt.Println(playErr)
+		// if attempt < 1 {
+		// 	// (re)Start MPD & try playing the track again
+
+		// }
 	}
 
 	if offset > 0 {
@@ -303,7 +307,7 @@ func playHandler(player *player.Player) http.HandlerFunc {
 
 							// }
 
-							playMP3(player, trackPath, int(offset)+padded_offset, currentID)
+							playMP3(player, trackPath, int(offset)+padded_offset, currentID, 0)
 
 							currentSong, _ := player.CurrentSong()
 							// fmt.Println(currentSong.Name)
@@ -439,34 +443,34 @@ func main() {
 	}()
 
 	// Start a goroutine to ping the MPD server every 5 seconds
-	// go func() {
-	// 	var delay time.Duration
-	// 	maxDelay := 1 * time.Minute // Set your maximum delay as needed
-	// 	for {
-	// 		// Ping the MPD server
-	// 		if err := mpdPlayer.Ping(); err != nil {
-	// 			fmt.Println("Error pinging MPD server:", err)
+	go func() {
+		var delay time.Duration
+		maxDelay := 1 * time.Minute // Set your maximum delay as needed
+		for {
+			// Ping the MPD server
+			if err := mpdPlayer.Ping(); err != nil {
+				fmt.Println("Error pinging MPD server:", err)
 
-	// 			// Attempt to re-connect
-	// 			// mpdPlayer, mpdError = player.NewPlayer(&mpdConfig)
-	// 			// if mpdError != nil {
-	// 			// 	fmt.Println("Error re-connecting..", err)
-	// 			// }
+				// Attempt to re-connect
+				// mpdPlayer, mpdError = player.NewPlayer(&mpdConfig)
+				// if mpdError != nil {
+				// 	fmt.Println("Error re-connecting..", err)
+				// }
 
-	// 			// Exponential backoff: double the delay each time, with a maximum limit
-	// 			delay *= 2
-	// 			if delay == 0 {
-	// 				delay = 1 * time.Second // Start with a small delay
-	// 			} else if delay > maxDelay {
-	// 				delay = maxDelay
-	// 			}
-	// 			time.Sleep(delay)
-	// 			continue
-	// 		}
-	// 		// Reset delay on successful ping
-	// 		delay = 0
-	// 	}
-	// }()
+				// Exponential backoff: double the delay each time, with a maximum limit
+				delay *= 2
+				if delay == 0 {
+					delay = 1 * time.Second // Start with a small delay
+				} else if delay > maxDelay {
+					delay = maxDelay
+				}
+				time.Sleep(delay)
+				continue
+			}
+			// Reset delay on successful ping
+			delay = 0
+		}
+	}()
 	var dberr error
 	trackdb, dberr = db.NewDB("test.db")
 	if dberr != nil {
