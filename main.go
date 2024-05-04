@@ -8,7 +8,6 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
-	"runtime"
 	"sync"
 	"syscall"
 	"text/template"
@@ -408,7 +407,7 @@ func handleNewTrack(w http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
-	runtime.GOMAXPROCS(runtime.NumCPU())
+	// runtime.GOMAXPROCS(runtime.NumCPU())
 	// Load JSON data from the "mp3.json" file
 	jsonDataFile, err := os.ReadFile(mp3JsonPath)
 	if err != nil {
@@ -443,40 +442,43 @@ func main() {
 	}()
 
 	// Start a goroutine to ping the MPD server every 5 seconds
+	pingDone := make(chan struct{})
 	go func() {
 		var delay time.Duration
 		maxDelay := 1 * time.Minute // Set your maximum delay as needed
 		for {
-			// Ping the MPD server
-			if err := mpdPlayer.Ping(); err != nil {
-				fmt.Println("Error pinging MPD server:", err)
+			select {
+			case <-pingDone:
+				// Exit the goroutine when the shutdown signal is received
+				return
+			default:
+				// Ping the MPD server
+				if err := mpdPlayer.Ping(); err != nil {
+					fmt.Println("Error pinging MPD server:", err)
 
-				// Attempt to re-connect
-				// mpdPlayer, mpdError = player.NewPlayer(&mpdConfig)
-				// if mpdError != nil {
-				// 	fmt.Println("Error re-connecting..", err)
-				// }
-
-				// Exponential backoff: double the delay each time, with a maximum limit
-				delay *= 2
-				if delay == 0 {
-					delay = 1 * time.Second // Start with a small delay
-				} else if delay > maxDelay {
-					delay = maxDelay
+					// Exponential backoff: double the delay each time, with a maximum limit
+					delay *= 2
+					if delay == 0 {
+						delay = 1 * time.Second // Start with a small delay
+					} else if delay > maxDelay {
+						delay = maxDelay
+					}
+					time.Sleep(delay)
+					continue
 				}
-				time.Sleep(delay)
-				continue
+				// Reset delay on successful ping
+				delay = 0
+				// Wait for 5 seconds before pinging again
+				time.Sleep(5 * time.Second)
 			}
-			// Reset delay on successful ping
-			delay = 0
 		}
 	}()
-	var dberr error
-	trackdb, dberr = db.NewDB("test.db")
-	if dberr != nil {
-		panic(dberr)
-	}
-	trackdb.CreateTable()
+	// var dberr error
+	// trackdb, dberr = db.NewDB("test.db")
+	// if dberr != nil {
+	// 	panic(dberr)
+	// }
+	// trackdb.CreateTable()
 
 	// Default Route to show all available tracks
 	router.HandleFunc("/", serveRoot)
@@ -507,6 +509,9 @@ func main() {
 
 	// Wait for an interrupt signal
 	<-stopChan
+
+	// Send shutdown signal to the ping goroutine
+	close(pingDone)
 	// err = http.ListenAndServe(":3001", chain)
 	// if err != nil {
 	// 	fmt.Println("Error:", err)
